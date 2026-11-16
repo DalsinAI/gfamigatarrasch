@@ -1,0 +1,82 @@
+diff --git a/src/Appdefs.h b/src/Appdefs.h
+index c47c59c..88afd61 100644
+--- a/src/Appdefs.h
++++ b/src/Appdefs.h
+@@ -18,9 +18,12 @@
+ #ifdef THC_WINDOWS
+ #define MASTER_VERSION MASTER_VERSION_BASE "-Windows"
+ #endif
+-#ifdef THC_LINUX
++#if defined THC_LINUX && !defined THC_AMIGA
+ #define MASTER_VERSION MASTER_VERSION_BASE "-Linux"
+ #endif
++#ifdef THC_AMIGA
++#define MASTER_VERSION MASTER_VERSION_BASE "-Amiga"
++#endif
+ #ifdef THC_MAC
+ #define MASTER_VERSION MASTER_VERSION_BASE "-Mac"
+ #endif
+@@ -30,16 +33,25 @@
+ #ifdef THC_WINDOWS
+ #define MASTER_VERSION MASTER_VERSION_BASE "-g-Windows"
+ #endif
+-#ifdef THC_LINUX
++#if defined THC_LINUX && !defined THC_AMIGA
+ #define MASTER_VERSION MASTER_VERSION_BASE "-g-Linux"
+ #endif
++#ifdef THC_AMIGA
++#define MASTER_VERSION MASTER_VERSION_BASE "-g-Amiga"
++#endif
+ #ifdef THC_MAC
+ #define MASTER_VERSION MASTER_VERSION_BASE "-g-Mac"
+ #endif
+ #endif
+ 
++#ifdef THC_AMIGA
++// AmigaOS: the Tarrasch Toy Engine, built for the 68040 with the GUI
++#define DEFAULT_ENGINE "ToyEngine"
++#define DEFAULT_ENGINE_64 "ToyEngine"
++#else
+ #define DEFAULT_ENGINE "stockfish-windows-x86-64-sse41-popcnt.exe"
+ #define DEFAULT_ENGINE_64 "stockfish-windows-x86-64-sse41-popcnt.exe"
++#endif
+ #define DEFAULTS_STEPPER_LEVEL 2
+ #define DATABASE_VERSION_NUMBER_LEGACY   1    // Old SQL type = supported with V3.03a
+ #define DATABASE_VERSION_NUMBER_TINY     2    // Some kind of intermediate version, we don't support it any more at all
+diff --git a/src/Portability.h b/src/Portability.h
+index b252e6d..abf9169 100644
+--- a/src/Portability.h
++++ b/src/Portability.h
+@@ -17,6 +17,12 @@
+ #elif defined __WXOSX__
+     #define THC_MAC
+     #define THC_UNIX
++#elif defined __AMIGA__
++    // AmigaOS (GFOS) on the GFOpenWX Toolkit: the Linux code paths, with
++    //  the engine link of UnixUciInterface.cpp done the AmigaOS way
++    #define THC_LINUX
++    #define THC_UNIX
++    #define THC_AMIGA
+ #else
+     #error "Unknown target platform - not Windows, Linux GTK or OSX"
+ #endif
+diff --git a/src/fseek64.h b/src/fseek64.h
+index 54bbb9f..95865c0 100644
+--- a/src/fseek64.h
++++ b/src/fseek64.h
+@@ -18,7 +18,14 @@ inline int64_t ftell64( FILE *file )
+     { return _ftelli64( file); }
+ #endif
+ 
+-#ifdef THC_UNIX
++#ifdef THC_AMIGA
++// AmigaOS files stay under 2 GB: plain fseek() and ftell()
++inline int fseek64( FILE *file, int64_t fposn, int origin )
++    { return fseek( file, (long)fposn, origin ); }
++
++inline int64_t ftell64( FILE *file )
++    { return ftell( file); }
++#elif defined THC_UNIX
+ inline int fseek64( FILE *file, int64_t fposn, int origin )
+     { return _fseeko( file, fposn, origin ); }
+ 

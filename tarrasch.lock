@@ -1,0 +1,15 @@
+# What this port builds on: fetched at build time, never shipped.
+# Tarrasch Chess GUI (MIT licence, Bill Forster), master of 20 Oct 2026 (V3.20b-)
+TARRASCH_GIT=https://github.com/billforsternz/tarrasch-chess-gui.git
+TARRASCH_COMMIT=957d9401dde447cd3a58b6a772773e47cc581b98
+TARRASCH_VERSION=3.20b
+# The Tarrasch Toy Engine (MIT licence, Bill Forster): the UCI engine shipped with it
+TOY_GIT=https://github.com/billforsternz/tarrasch-toy-engine.git
+TOY_COMMIT=96319e796beb0b08e5d6554ca5abb672a19fda0e
+# Our own pieces, fetched at these commits
+# GFOpenWX Toolkit main 0dc65bc (1.0-rc4: richtext, aui, html, xml, net)
+WXT_REPO=https://github.com/DalsinAI/gfopenwxtoolkit
+WXT_COMMIT=0dc65bca5f71d10f15f078ddac04b5d24829a155
+# fpuauto (common/fpuauto): the FPU when there is one
+FPA_REPO=https://github.com/DalsinAI/amicradle-guest
+FPA_COMMIT=4a784c84b878fe0e9abade7006e67e1ded9b165c
