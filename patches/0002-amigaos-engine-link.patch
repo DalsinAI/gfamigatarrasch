@@ -1,0 +1,86 @@
+diff --git a/src/UnixUciInterface.cpp b/src/UnixUciInterface.cpp
+index 501111b..8b57093 100644
+--- a/src/UnixUciInterface.cpp
++++ b/src/UnixUciInterface.cpp
+@@ -10,9 +10,13 @@
+ // Can be included in Windows builds if convenient because the whole thing is conditionally compiled
+ #ifdef THC_UNIX
+ #include <string.h>
++#ifdef THC_AMIGA
++#include "tarrasch_amiga_engine.h"
++#else
+ #include <unistd.h>
+ #include <sys/wait.h>
+ #include <sys/time.h>
++#endif
+ 
+ #include "UciInterface.h"
+ #include "DebugPrintf.h"
+@@ -86,6 +90,35 @@ static void ErrorMessage( const char *filename_uci_exe, const char *str )  //dis
+ {
+ }
+ 
++#ifdef THC_AMIGA
++// AmigaOS: the engine is an AmigaDOS process joined by PIPE: channels
++//  (compat/tarrasch_amiga_engine.c); there are no file descriptors
++static int mac_fd_read;
++static int mac_fd_write;
++
++unsigned long GetTickCount()
++{
++    return tarrasch_ticks_ms();
++}
++
++void Sleep( int ms )
++{
++    tarrasch_sleep_ms( ms );
++}
++
++int MacReadNonBlocking( int fd, char *buf, int max )
++{
++    (void)fd;
++    return tarrasch_engine_read( buf, max );
++}
++
++void MacWrite( int fd, const char *buf )
++{
++    (void)fd;
++    tarrasch_engine_write( buf );
++}
++
++#else
+ static int mac_fd_read;
+ static int mac_fd_write;
+ 
+@@ -148,6 +181,8 @@ void MacWrite( int fd, const char *buf )
+ }
+ 
+ 
++#endif // THC_AMIGA
++
+ //---------------------------------------------------------------------------
+ UciInterface::UciInterface( const char *filename_uci_exe )
+ {
+@@ -189,6 +224,14 @@ UciInterface::UciInterface( const char *filename_uci_exe )
+     debug_trigger = false;
+ 
+ 
++#ifdef THC_AMIGA
++    // the engine at a lower priority than Tarrasch, so the board stays live
++    int lower = objs.repository->engine.m_idle_priority ? 3 : objs.repository->engine.m_low_priority ? 2 : 1;
++    std::string engine_file( objs.repository->engine.m_file.c_str() );
++    okay = tarrasch_engine_start( engine_file.c_str(), lower ) != 0;
++    (void)mac_fd_read;
++    (void)mac_fd_write;
++#else
+     pid_t nPid;
+     int pipeto[2];      // pipe to feed the exec'ed program input
+     int pipefrom[2];    // pipe to get the exec'ed program output
+@@ -250,6 +293,7 @@ UciInterface::UciInterface( const char *filename_uci_exe )
+         mac_fd_write = pipeto[1];
+         okay = true;
+     }
++#endif // THC_AMIGA
+ }
+ 
+ void UciInterface::SuspendResume( bool resume )

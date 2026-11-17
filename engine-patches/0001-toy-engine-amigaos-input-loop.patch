@@ -1,0 +1,67 @@
+diff --git a/src/ChessEngine.cpp b/src/ChessEngine.cpp
+index deb7ee0..df1dd84 100644
+--- a/src/ChessEngine.cpp
++++ b/src/ChessEngine.cpp
+@@ -11,7 +11,11 @@
+ #include <ctype.h>
+ #include <assert.h>
+ #include <algorithm>
++#ifdef __AMIGA__
++#include "toy_amiga.h"     // GetTickCount()
++#else
+ #include <windows.h>    // GetTickCount()
++#endif
+ #include "thc.h"
+ #include "ChessEngine.h"
+ using namespace std;
+diff --git a/src/toyengine.cpp b/src/toyengine.cpp
+index ac6dde7..f9298ce 100644
+--- a/src/toyengine.cpp
++++ b/src/toyengine.cpp
+@@ -2,10 +2,15 @@
+  * A simple UCI engine to demonstrate the Tarrasch GUI
+  ****************************************************************************/
+ #define _CRT_SECURE_NO_DEPRECATE
++#ifdef __AMIGA__
++#include "toy_amiga.h"
++#include <stdarg.h>
++#else
+ #include <windows.h>
++#include <io.h>
++#endif
+ #include <stdio.h>
+ #include <ctype.h>
+-#include <io.h>
+ #include <string.h>
+ #include <time.h>
+ #include "thc.h"
+@@ -32,7 +37,9 @@ const char *cmd_position( const char *cmd );
+ const char *log_time();
+ static bool is_new_game();
+ 
++#ifndef __AMIGA__
+ HANDLE hSem;
++#endif
+ #define BIGBUF 8190
+ static char cmdline[8][BIGBUF+2];
+ static int cmd_put;
+@@ -78,6 +85,10 @@ int cprintf( const char *fmt, ... )
+ 
+ 
+ 
++#ifdef __AMIGA__
++// AmigaOS: a reader process and exec signals (compat/toy_amiga_io.inc)
++#include "toy_amiga_io.inc"
++#else
+ void read_stdin()
+ {
+     bool quit=false;
+@@ -182,6 +193,8 @@ int main( int argc, char *argv[] )
+     return 0;
+ }
+ 
++#endif // __AMIGA__
++
+ const char *log_time()
+ {
+     static char buf[1024];
