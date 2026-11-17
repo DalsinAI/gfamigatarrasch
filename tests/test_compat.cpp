@@ -7,6 +7,7 @@
 #include <vector>
 #include "tarrasch_engine_util.h"
 #include "toy_lines.h"
+#include "toy_amiga.h"
 
 static int fails = 0;
 #define CHECK(c) do { if( !(c) ) { std::printf( "FAIL %s:%d: %s\n", __FILE__, __LINE__, #c ); fails++; } } while( 0 )
@@ -116,6 +117,26 @@ static void test_lines()
     CHECK( !toy_is_word( "go stop", "stop" ) );
 }
 
+static void test_toy_shims()
+{
+    char sq[8];
+    CHECK( strcpy_s( sq, sizeof sq, "rnbqkbn" ) == 0 && std::strcmp( sq, "rnbqkbn" ) == 0 );
+    CHECK( strcpy_s( sq, sizeof sq, "rnbqkbnr" ) != 0 && sq[0] == '\0' );   // no room for the end
+    CHECK( strcpy_s( sq, sizeof sq, nullptr ) != 0 );
+    CHECK( _strcmpi( "QUIT", "quit" ) == 0 );
+    CHECK( _strcmpi( "stop", "quit" ) != 0 );
+    CHECK( _strcmpi( "go", "goo" ) < 0 );
+    FILE *f = nullptr;
+    CHECK( fopen_s( &f, "/nonexistent/dir/toy.log", "r" ) != 0 && f == nullptr );
+    time_t t = 0;
+    struct tm tmv;
+    char buf[64];
+    CHECK( localtime_s( &tmv, &t ) == 0 );
+    CHECK( asctime_s( buf, sizeof buf, &tmv ) == 0 && std::strchr( buf, '\n' ) );
+    char tiny[4];
+    CHECK( asctime_s( tiny, sizeof tiny, &tmv ) != 0 );
+}
+
 int main()
 {
     test_ring();
@@ -123,6 +144,7 @@ int main()
     test_engine_line();
     test_clock();
     test_lines();
+    test_toy_shims();
     if( fails )
         std::printf( "%d failed\n", fails );
     else

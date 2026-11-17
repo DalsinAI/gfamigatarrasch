@@ -5,7 +5,7 @@ test: test_compat
 	./test_compat
 	sh test-part.sh
 	sh test-patches.sh
-test_compat: test_compat.cpp ../compat/tarrasch_engine_util.h ../compat/toy_lines.h
+test_compat: test_compat.cpp ../compat/tarrasch_engine_util.h ../compat/toy_lines.h ../compat/toy_amiga.h
 	$(CXX) $(CXXFLAGS) -I../compat -o $@ test_compat.cpp
 clean:
 	rm -f test_compat

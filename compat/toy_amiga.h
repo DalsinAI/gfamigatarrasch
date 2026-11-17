@@ -1,5 +1,6 @@
 /* What the Tarrasch Toy Engine takes from Windows, on AmigaOS: forced in
- * with -include for engine/ (engine-patches/0001).
+ * with -include for every Toy Engine source (build-amiga.sh), and named
+ * by engine-patches/0001.
  * Copyright (c) 2026 AmiCradle Team. MIT licence, like Tarrasch. */
 #ifndef TOY_AMIGA_H
 #define TOY_AMIGA_H
@@ -23,6 +24,20 @@ static inline errno_t fopen_s( FILE **f, const char *name, const char *mode )
 {
     *f = fopen( name, mode );
     return *f ? 0 : ( errno ? errno : ENOENT );
+}
+
+/* thc.h fills its board with it */
+static inline errno_t strcpy_s( char *d, size_t size, const char *s )
+{
+    if( !d || !size )
+        return EINVAL;
+    if( !s || strlen( s ) >= size )
+    {
+        *d = '\0';
+        return EINVAL;
+    }
+    strcpy( d, s );
+    return 0;
 }
 
 static inline errno_t localtime_s( struct tm *out, const time_t *t )

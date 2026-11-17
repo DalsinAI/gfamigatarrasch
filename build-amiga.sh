@@ -142,7 +142,7 @@ compile_all() {   # objdir compiler srcdir files...
 }
 
 # --- the Toy Engine: three units, no toolkit ---------------------------------
-CC_FLAGS="$CF -std=gnu++17 -I$HERE/compat -I$TOY/src -Wno-write-strings -Wno-format-security"
+CC_FLAGS="$CF -std=gnu++17 -include $HERE/compat/toy_amiga.h -I$HERE/compat -I$TOY/src -Wno-write-strings -Wno-format-security"
 export CC_FLAGS
 compile_all "$WORK/obj-toy" m68k-amigaos-g++ "$TOY/src" thc.cpp ChessEngine.cpp toyengine.cpp
 # shellcheck disable=SC2086
