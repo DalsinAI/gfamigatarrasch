@@ -32,6 +32,12 @@ void tarrasch_engine_stop( void );
 unsigned long tarrasch_ticks_ms( void );
 void tarrasch_sleep_ms( int ms );
 
+/* One Tarrasch at a time (tarrasch_amiga_snglinst.h): claim puts up a
+ * public port of that name and returns 0, or returns 1 when another
+ * Tarrasch already has it. release takes ours down; also run at exit. */
+int  tarrasch_instance_claim( const char *name );
+void tarrasch_instance_release( void );
+
 #ifdef __cplusplus
 }
 #endif
