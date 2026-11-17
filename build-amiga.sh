@@ -129,7 +129,8 @@ compile_all() {   # objdir compiler srcdir files...
     # shellcheck disable=SC2016
     timeout "$l" xargs -P "$JOBS" -I{} sh -c '
         n=$(basename "$1" .cpp)
-        nice -n 19 '"$cc"' $CC_FLAGS -c "'"$sd"'/$1" -o "'"$od"'/$n.o.tmp" > "'"$od"'/$n.log" 2>&1 \
+        case " $SLOW_UNITS " in *" $n "*) X=-O0 ;; *) X= ;; esac
+        nice -n 19 '"$cc"' $CC_FLAGS $X -c "'"$sd"'/$1" -o "'"$od"'/$n.o.tmp" > "'"$od"'/$n.log" 2>&1 \
             && mv "'"$od"'/$n.o.tmp" "'"$od"'/$n.o"' _ {} < "$od/todo"
     rc=$?
     set -e
@@ -148,6 +149,7 @@ compile_all() {   # objdir compiler srcdir files...
 # --- the Toy Engine: three units, no toolkit ---------------------------------
 # (the stove's C++ library takes its locks and once-only setup from pthread,
 # so the engine links it like every C++ program here)
+SLOW_UNITS=""; export SLOW_UNITS
 CC_FLAGS="$CF -std=gnu++17 -include $HERE/compat/toy_amiga.h -I$HERE/compat -I$TOY/src -Wno-write-strings -Wno-format-security"
 export CC_FLAGS
 compile_all "$WORK/obj-toy" m68k-amigaos-g++ "$TOY/src" thc.cpp ChessEngine.cpp toyengine.cpp
@@ -161,6 +163,10 @@ echo "toy engine: $(( $(date +%s) - t0 )) s"
 FILES=$(cd "$SRC/src" && ls ./*.cpp | sed 's|^\./||' | grep -vxE 'legal-move-generator.cpp|tabartmsw.cpp|WinUciInterface.cpp|tarrasch-test.cpp')
 CC_FLAGS="$CF -std=gnu++17 $("$WXC" --cxxflags) -I$HERE/compat -I$SRC/src -Wno-deprecated-declarations -Wno-write-strings -Wno-format-security"
 export CC_FLAGS
+# Eco.cpp is one table of 500 openings, each entry a std::string and a chess
+# position built at start: optimising that one initialiser took more than a
+# whole run (840 s) at -O2, so it is compiled as written. It runs once.
+SLOW_UNITS="Eco"; export SLOW_UNITS
 # shellcheck disable=SC2086
 compile_all "$WORK/obj-tarrasch" m68k-amigaos-g++ "$SRC/src" $FILES
 O="$WORK/obj-tarrasch"
