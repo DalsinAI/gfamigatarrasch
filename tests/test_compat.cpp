@@ -8,6 +8,7 @@
 #include "tarrasch_engine_util.h"
 #include "toy_lines.h"
 #include "toy_amiga.h"
+#include "tarrasch_amiga_itoa.h"
 
 static int fails = 0;
 #define CHECK(c) do { if( !(c) ) { std::printf( "FAIL %s:%d: %s\n", __FILE__, __LINE__, #c ); fails++; } } while( 0 )
@@ -137,6 +138,20 @@ static void test_toy_shims()
     CHECK( asctime_s( tiny, sizeof tiny, &tmv ) != 0 );
 }
 
+static void test_itoa()
+{
+    char b[40];
+    CHECK( std::strcmp( _itoa( 0, b, 10 ), "0" ) == 0 );
+    CHECK( std::strcmp( _itoa( 1, b, 10 ), "1" ) == 0 );
+    CHECK( std::strcmp( _itoa( 417, b, 10 ), "417" ) == 0 );
+    CHECK( std::strcmp( _itoa( -42, b, 10 ), "-42" ) == 0 );
+    CHECK( std::strcmp( _itoa( -2147483647 - 1, b, 10 ), "-2147483648" ) == 0 );
+    CHECK( std::strcmp( _itoa( 255, b, 16 ), "ff" ) == 0 );
+    CHECK( std::strcmp( _itoa( 5, b, 2 ), "101" ) == 0 );
+    CHECK( std::strcmp( _itoa( -1, b, 16 ), "ffffffff" ) == 0 );   // MSVC: unsigned outside radix 10
+    CHECK( _itoa( 5, b, 1 ) == b && b[0] == '\0' );
+}
+
 int main()
 {
     test_ring();
@@ -145,6 +160,7 @@ int main()
     test_clock();
     test_lines();
     test_toy_shims();
+    test_itoa();
     if( fails )
         std::printf( "%d failed\n", fails );
     else

@@ -18,6 +18,8 @@ has tarrasch/src/Portability.h 'define THC_AMIGA'
 has tarrasch/src/UnixUciInterface.cpp 'tarrasch_engine_start'
 has tarrasch/src/Appdefs.h 'DEFAULT_ENGINE "ToyEngine"'
 has tarrasch/src/fseek64.h 'ifdef THC_AMIGA'
+has tarrasch/src/Portability.h 'tarrasch_amiga_itoa.h'
+has tarrasch/src/main.cpp 'tarrasch_amiga_snglinst.h'
 has toy/src/toyengine.cpp 'toy_amiga_io.inc'
 has toy/src/ChessEngine.cpp 'toy_amiga.h'
 # no file is left half patched

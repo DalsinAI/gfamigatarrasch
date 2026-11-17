@@ -12,11 +12,14 @@
  * Copyright (c) 2026 AmiCradle Team. MIT licence, like Tarrasch. */
 #include <exec/types.h>
 #include <exec/semaphores.h>
+#include <exec/ports.h>
+#include <exec/memory.h>
 #include <dos/dos.h>
 #include <dos/dostags.h>
 #include <proto/exec.h>
 #include <proto/dos.h>
 #include <stdlib.h>
+#include <string.h>
 #include "tarrasch_amiga_engine.h"
 #include "tarrasch_engine_util.h"
 
@@ -209,4 +212,47 @@ unsigned long tarrasch_ticks_ms( void )
 void tarrasch_sleep_ms( int ms )
 {
     Delay( te_delay_ticks( ms ) );
+}
+
+/* --- one Tarrasch at a time (tarrasch_amiga_snglinst.h) ---------------------
+ * The first Tarrasch puts up a public port of this name; a second finds it.
+ * The port only marks the name: nothing is ever sent to it. */
+static struct MsgPort *te_instance;
+static char te_instance_name[40];
+
+int tarrasch_instance_claim( const char *name )
+{
+    int another;
+    if( te_instance )
+        return 0;
+    Forbid();
+    another = FindPort( (CONST_STRPTR)name ) != NULL;
+    if( !another )
+    {
+        te_instance = (struct MsgPort *)AllocVec( sizeof *te_instance, MEMF_PUBLIC | MEMF_CLEAR );
+        if( te_instance )
+        {
+            strncpy( te_instance_name, name, sizeof te_instance_name - 1 );
+            te_instance->mp_Node.ln_Type = NT_MSGPORT;
+            te_instance->mp_Node.ln_Name = te_instance_name;
+            te_instance->mp_Flags = PA_IGNORE;
+            te_instance->mp_MsgList.lh_Head = (struct Node *)&te_instance->mp_MsgList.lh_Tail;
+            te_instance->mp_MsgList.lh_Tail = NULL;
+            te_instance->mp_MsgList.lh_TailPred = (struct Node *)&te_instance->mp_MsgList.lh_Head;
+            AddPort( te_instance );
+        }
+    }
+    Permit();
+    if( !another && te_instance )
+        atexit( tarrasch_instance_release );
+    return another;
+}
+
+void tarrasch_instance_release( void )
+{
+    if( !te_instance )
+        return;
+    RemPort( te_instance );
+    FreeVec( te_instance );
+    te_instance = NULL;
 }

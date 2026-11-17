@@ -44,7 +44,7 @@ index c47c59c..88afd61 100644
  #define DATABASE_VERSION_NUMBER_LEGACY   1    // Old SQL type = supported with V3.03a
  #define DATABASE_VERSION_NUMBER_TINY     2    // Some kind of intermediate version, we don't support it any more at all
 diff --git a/src/Portability.h b/src/Portability.h
-index b252e6d..abf9169 100644
+index b252e6d..a452cb1 100644
 --- a/src/Portability.h
 +++ b/src/Portability.h
 @@ -17,6 +17,12 @@
@@ -60,6 +60,18 @@ index b252e6d..abf9169 100644
  #else
      #error "Unknown target platform - not Windows, Linux GTK or OSX"
  #endif
+@@ -25,6 +31,11 @@
+    #define WINDOWS_FIX_LATER   // Windows only, fix later on Mac, Linux
+ #endif
+ 
++#ifdef THC_AMIGA
++   // the one MSVC call outside the Windows code (CompressMoves.cpp)
++   #include "tarrasch_amiga_itoa.h"
++#endif
++
+ #ifdef THC_WINDOWS
+    #include <Windows.h>
+    #include <string.h>
 diff --git a/src/fseek64.h b/src/fseek64.h
 index 54bbb9f..95865c0 100644
 --- a/src/fseek64.h
@@ -80,3 +92,17 @@ index 54bbb9f..95865c0 100644
  inline int fseek64( FILE *file, int64_t fposn, int origin )
      { return _fseeko( file, fposn, origin ); }
  
+diff --git a/src/main.cpp b/src/main.cpp
+index 45413aa..f71a572 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -25,6 +25,9 @@
+ #include "wx/log.h"
+ #include "wx/filehistory.h"
+ #include "wx/snglinst.h"
++#ifdef THC_AMIGA
++#include "tarrasch_amiga_snglinst.h"   // when the toolkit has no wxSingleInstanceChecker
++#endif
+ #include "wx/ipc.h"
+ #include "wx/aui/aui.h"
+ #ifdef AUI_NOTEBOOK
