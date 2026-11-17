@@ -142,13 +142,15 @@ compile_all() {   # objdir compiler srcdir files...
 }
 
 # --- the Toy Engine: three units, no toolkit ---------------------------------
+# (the stove's C++ library takes its locks and once-only setup from pthread,
+# so the engine links it like every C++ program here)
 CC_FLAGS="$CF -std=gnu++17 -include $HERE/compat/toy_amiga.h -I$HERE/compat -I$TOY/src -Wno-write-strings -Wno-format-security"
 export CC_FLAGS
 compile_all "$WORK/obj-toy" m68k-amigaos-g++ "$TOY/src" thc.cpp ChessEngine.cpp toyengine.cpp
 # shellcheck disable=SC2086
 m68k-amigaos-g++ $LINK -o "$WORK/obj-toy/ToyEngine.debug" \
     "$WORK/obj-toy/thc.o" "$WORK/obj-toy/ChessEngine.o" "$WORK/obj-toy/toyengine.o" \
-    > "$WORK/obj-toy/link.log" 2>&1 || { head -60 "$WORK/obj-toy/link.log"; exit 1; }
+    -lpthread > "$WORK/obj-toy/link.log" 2>&1 || { head -60 "$WORK/obj-toy/link.log"; exit 1; }
 echo "toy engine: $(( $(date +%s) - t0 )) s"
 
 # --- Tarrasch: every .cpp of src/ but the Windows ones and the test program --
