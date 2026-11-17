@@ -137,7 +137,11 @@ compile_all() {   # objdir compiler srcdir files...
         n=$(basename "$f" .cpp)
         [ -f "$od/$n.o" ] || { grep -E 'error' "$od/$n.log" 2>/dev/null | head -20; }
     done
-    if [ "$rc" = 124 ]; then echo "out of time: run again to go on"; exit 0; fi
+    if [ "$rc" = 124 ]; then
+        echo "out of time: run again to go on; not made yet:"
+        for f in $(cat "$od/todo"); do [ -f "$od/$(basename "$f" .cpp).o" ] || echo "  $f"; done
+        exit 0
+    fi
     [ "$rc" = 0 ] || { echo "compile failed"; exit 1; }
 }
 
